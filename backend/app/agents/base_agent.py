@@ -37,25 +37,15 @@ class BaseAgent:
             final_prompt += f"\n\nIMPORTANT: You must return ONLY a valid JSON object matching this structure:\n{json.dumps(schema_template, indent=2)}\nDo NOT include markdown syntax (like ```json), explanations, or notes. Just return the JSON object."
 
         try:
-            # Use gemini-2.5-pro for high-level reasoning tasks (Gap, Hypothesis, Experiment, Pub)
-            model_name = "gemini-2.5-pro"
-            try:
-                response = client.models.generate_content(
-                    model=model_name,
-                    contents=final_prompt,
-                    config=types.GenerateContentConfig(
-                        system_instruction=self.system_prompt
-                    )
+            # Use gemini-2.5-flash directly for high-speed, high-limit free-tier runs
+            model_name = "gemini-2.5-flash"
+            response = client.models.generate_content(
+                model=model_name,
+                contents=final_prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=self.system_prompt
                 )
-            except Exception as e:
-                print(f"Failed using {model_name}: {e}. Falling back to gemini-2.5-flash.")
-                response = client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=final_prompt,
-                    config=types.GenerateContentConfig(
-                        system_instruction=self.system_prompt
-                    )
-                )
+            )
 
             # Strip possible markdown styling blocks
             clean_text = response.text.strip()
