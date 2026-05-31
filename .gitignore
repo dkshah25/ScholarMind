@@ -1,0 +1,39 @@
+# Virtual Environments & Build Assets
+venv/
+.venv/
+node_modules/
+.next/
+dist/
+out/
+build/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local Database & Dynamic Vectors
+scholarmind.db
+scholarmind.db-journal
+chroma_db/
+session_graph_*.json
+session_vectors_*.json
+
+# File Uploads & Local Ingestion Cache
+uploads/
+backend/uploads/
+frontend/public/uploads/
+
+# Environment Configurations & Private Secrets
+.env
+.env.local
+.env.production
+.env.development
+.env.staging
+.env.*.local
+
+# Logs and Debug outputs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.system_generated/
