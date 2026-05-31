@@ -67,7 +67,7 @@ def run_agent_pipeline_for_session(session_id: str) -> SessionResponse:
     for idx_p, paper in enumerate(session.papers):
         parsed_text = db.get_paper_content(paper.id) or ""
         if idx_p > 0:
-            time.sleep(4)
+            time.sleep(1)
         
         # Run Research Agent to get detailed summaries and contributions
         summary_res = research_agent.summarize_paper(paper.title, parsed_text)
@@ -104,11 +104,11 @@ def run_agent_pipeline_for_session(session_id: str) -> SessionResponse:
     # -------------------------------------------------------------
     # Step 3: Literature Agent, Contradiction Agent & Trend Agent
     # -------------------------------------------------------------
-    time.sleep(4)
+    time.sleep(1)
     print("Executing Literature Synthesis...")
     lit_review = literature_agent.compare_papers(session.topic, paper_summaries)
     
-    time.sleep(4)
+    time.sleep(1)
     print("Executing Contradiction Detection Agent...")
     clash_res = contradiction_agent.detect_contradictions(session.topic, paper_summaries)
     discovered_clashes = []
@@ -122,7 +122,7 @@ def run_agent_pipeline_for_session(session_id: str) -> SessionResponse:
         ))
     session.contradictions = discovered_clashes
 
-    time.sleep(4)
+    time.sleep(1)
     print("Executing Trend Forecasting Agent...")
     trend_res = trend_agent.forecast_trends(session.topic, paper_summaries)
     session.trends = TrendForecast(
@@ -135,7 +135,7 @@ def run_agent_pipeline_for_session(session_id: str) -> SessionResponse:
     # -------------------------------------------------------------
     # Step 4: Gap Agent & Peer-Review Debate Mode
     # -------------------------------------------------------------
-    time.sleep(4)
+    time.sleep(1)
     print("Executing Research Gap Discovery (Focal Feature)...")
     gap_res = gap_agent.discover_gaps(session.topic, lit_review, paper_summaries)
     
@@ -160,7 +160,7 @@ def run_agent_pipeline_for_session(session_id: str) -> SessionResponse:
     primary_debate = []
     if discovered_gaps:
         target_gap = discovered_gaps[0]
-        time.sleep(4)
+        time.sleep(1)
         print(f"Executing Academic Peer-Review Debate Arena on Gap: '{target_gap.title}'...")
         critique_res = critic_agent.critique_gap(
             target_gap.title, 
@@ -189,7 +189,7 @@ def run_agent_pipeline_for_session(session_id: str) -> SessionResponse:
         
         Provide a robust, technically grounded 3-sentence scientific defense.
         """
-        time.sleep(4)
+        time.sleep(1)
         def_res = gap_agent.call_llm(prompt_def)
         primary_debate.append({
             "speaker": "Researcher Agent",
@@ -245,7 +245,7 @@ def run_agent_pipeline_for_session(session_id: str) -> SessionResponse:
     primary_hypothesis = None
     if discovered_gaps:
         target_gap = discovered_gaps[0]
-        time.sleep(4)
+        time.sleep(1)
         print(f"Generating Hypotheses for Gap: '{target_gap.title}' (Novelty Check)...")
         hypo_res = hypothesis_agent.generate_hypothesis(
             target_gap.title, 
@@ -286,7 +286,7 @@ def run_agent_pipeline_for_session(session_id: str) -> SessionResponse:
     # -------------------------------------------------------------
     primary_experiment = None
     if primary_hypothesis:
-        time.sleep(4)
+        time.sleep(1)
         print("Designing Empirical Experiment Blueprint...")
         exp_res = experiment_agent.design_experiment(
             primary_hypothesis.statement, 
@@ -309,14 +309,14 @@ def run_agent_pipeline_for_session(session_id: str) -> SessionResponse:
     # -------------------------------------------------------------
     # Step 7: Publication Agent
     # -------------------------------------------------------------
-    time.sleep(4)
+    time.sleep(1)
     print("Compiling LaTeX/Markdown Academic Sections...")
     papers_summary_text = "\n".join([
         f"Paper: {p.get('title')}\nProblem: {p.get('problem_statement')}\nMethod: {p.get('proposed_methodology')}" 
         for p in paper_summaries
     ])
     
-    time.sleep(4)
+    time.sleep(1)
     pub_res = publication_agent.write_manuscript_draft(
         topic=session.topic,
         papers_summary=papers_summary_text,
@@ -338,7 +338,7 @@ def run_agent_pipeline_for_session(session_id: str) -> SessionResponse:
     # Step 8: Research Quality Evaluator & Reproducibility Checker
     # -------------------------------------------------------------
     if primary_hypothesis and primary_experiment:
-        time.sleep(4)
+        time.sleep(1)
         print("Executing Research Quality Evaluator & Reproducibility Auditor...")
         quality_res = quality_agent.evaluate_research(
             topic=session.topic,
