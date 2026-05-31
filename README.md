@@ -21,23 +21,85 @@ ScholarMind is not just another "RAG research assistant." It is a comprehensive 
 ScholarMind coordinates a highly decoupled network of specialized LLM agents using **LangGraph / Python coordinator**:
 
 ```mermaid
-graph TD
-    A[PDF Ingestion] --> B["Research Agent"]
-    B --> C["Literature Agent"]
-    C --> D["Contradiction Agent"]
-    C --> E["Trend Forecasting Agent"]
-    C --> F["Gap Discovery Agent"]
-    F <--> G["Reviewer Agent (Debate Arena)"]
-    F --> H["Hypothesis Agent"]
-    H --> I["Dataset & Benchmark Recommender"]
-    I --> J["Experiment Agent"]
-    J --> K["Quality Evaluator & Reproducibility Checker"]
-    K --> L["Publication Agent (LaTeX Draft)"]
-    
-    style F fill:#4f46e5,stroke:#fff,stroke-width:2px,color:#fff
-    style H fill:#0891b2,stroke:#fff,stroke-width:2px,color:#fff
-    style G fill:#ea580c,stroke:#fff,stroke-width:2px,color:#fff
-    style K fill:#16a34a,stroke:#fff,stroke-width:2px,color:#fff
+flowchart TD
+
+    A[Academic PDF Uploads] --> B[PDF Parser]
+    B --> C[Metadata Extraction]
+    B --> D[Text Chunking]
+    D --> E[Embedding Generation]
+
+    E --> F[Vector Layer]
+
+    F --> F1[ChromaDB]
+    F --> F2[Pure Python Cosine Engine Fallback]
+
+    C --> G[SQLite Session Store]
+    C --> H[Paper Repository]
+
+    H --> I[Coordinator]
+
+    subgraph Multi-Agent Research Pipeline
+
+        I --> J[Research Agent]
+        J --> K[Literature Agent]
+
+        K --> L[Contradiction Agent]
+        K --> M[Trend Agent]
+
+        L --> N[Gap Agent]
+        M --> N
+
+        N --> O[Reviewer Agent]
+
+        O --> P[Debate Arena]
+
+        P --> Q[Hypothesis Agent]
+
+        Q --> R[Experiment Agent]
+
+        R --> S[Publication Agent]
+
+        S --> T[Quality Agent]
+
+    end
+
+    T --> U[Research Session State]
+
+    U --> V[Research Lineage Engine]
+
+    U --> W[Knowledge Graph Engine]
+
+    U --> X[Research Co-Pilot]
+
+    W --> Y[React Flow Graph]
+
+    V --> Z[Traceability Chain]
+
+    Z --> ZA[Hypothesis]
+    ZA --> ZB[Gap]
+    ZB --> ZC[Findings]
+    ZC --> ZD[Source Papers]
+
+    U --> ZE[Benchmark Scores]
+    U --> ZF[Experiment Blueprints]
+    U --> ZG[Publication Drafts]
+    U --> ZH[Debate Transcripts]
+    U --> ZI[Contradiction Reports]
+
+    G --> ZJ[SQLite Persistence]
+    G --> ZK[Supabase Cloud Sync Fallback]
+
+    subgraph Frontend Dashboard
+
+        Y
+        X
+        ZE
+        ZF
+        ZG
+        ZH
+        ZI
+
+    end
 ```
 
 ---
