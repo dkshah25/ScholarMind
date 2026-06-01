@@ -34,7 +34,7 @@ def run_pipeline_test():
         experiments=[],
         reports=ReportResponse(latex_document="", formatted_html=""),
         contradictions=[],
-        trends=TrendForecast(growth_rate="Emerging", growth_metric="0.0", novel_elements=[], commercial_potential="None", implementation_path=""),
+        trends=TrendForecast(growth_rate="Emerging", emerging_directions=[], predictions=[]),
         copilot_history=[],
         benchmarks=BenchmarkScores(datasets=[], benchmarks=[], metrics=[], baselines=[], self_audit_critique=""),
         patents=[],
@@ -108,7 +108,7 @@ def run_pipeline_test():
             print(f" - Hypothesis 1: {final_session.hypotheses[0].hypothesis_statement}")
         print(f"Experiments Recommended: {len(final_session.experiments)}")
         print(f"Contradictions Detected: {len(final_session.contradictions)}")
-        print(f"Trend Forecast Elements: {final_session.trends.novel_elements if final_session.trends else 'None'}")
+        print(f"Trend Forecast Directions: {final_session.trends.emerging_directions if final_session.trends else 'None'}")
         print(f"LaTeX Report Generated (first 100 chars): {final_session.reports.latex_document[:100] if final_session.reports else 'None'}...")
         
     except Exception as e:
