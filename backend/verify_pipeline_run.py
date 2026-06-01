@@ -32,7 +32,7 @@ def run_pipeline_test():
         gaps=[],
         hypotheses=[],
         experiments=[],
-        reports=ReportResponse(latex_document="", formatted_html=""),
+        reports=ReportResponse(abstract="", literature_review="", methodology="", future_work=""),
         contradictions=[],
         trends=TrendForecast(growth_rate="Emerging", emerging_directions=[], predictions=[]),
         copilot_history=[],
@@ -102,14 +102,14 @@ def run_pipeline_test():
         print(f"Papers Processed: {len(final_session.papers)}")
         print(f"Gaps Discovered: {len(final_session.gaps)}")
         if final_session.gaps:
-            print(f" - Gap 1: {final_session.gaps[0].gap_title}")
+            print(f" - Gap 1: {final_session.gaps[0].title}")
         print(f"Hypotheses Formulated: {len(final_session.hypotheses)}")
         if final_session.hypotheses:
-            print(f" - Hypothesis 1: {final_session.hypotheses[0].hypothesis_statement}")
+            print(f" - Hypothesis 1: {final_session.hypotheses[0].statement}")
         print(f"Experiments Recommended: {len(final_session.experiments)}")
         print(f"Contradictions Detected: {len(final_session.contradictions)}")
         print(f"Trend Forecast Directions: {final_session.trends.emerging_directions if final_session.trends else 'None'}")
-        print(f"LaTeX Report Generated (first 100 chars): {final_session.reports.latex_document[:100] if final_session.reports else 'None'}...")
+        print(f"LaTeX Literature Review Generated (first 100 chars): {final_session.reports.literature_review[:100] if final_session.reports else 'None'}...")
         
     except Exception as e:
         print(f"\nERROR: Pipeline execution failed: {e}")
