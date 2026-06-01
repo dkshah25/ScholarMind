@@ -4,25 +4,17 @@ import re
 import math
 import uuid
 from typing import Dict, Any, List
-from google import genai
 from dotenv import load_dotenv
+from app.services.ollama_client import OllamaClient
 
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-client = None
-if GEMINI_API_KEY and len(GEMINI_API_KEY.strip()) > 8 and "Replace" not in GEMINI_API_KEY:
-    try:
-        client = genai.Client(api_key=GEMINI_API_KEY)
-    except Exception as e:
-        print(f"Failed to initialize Gemini Client in knowledge_graph: {e}")
-
 def extract_graph_from_text(paper_title: str, text: str) -> Dict[str, List[Dict[str, Any]]]:
-    """Uses Gemini to parse a paper's text and extract semantic nodes and relationships."""
+    """Uses local Ollama (Qwen3:8B) to parse a paper's text and extract semantic nodes and relationships."""
     default_graph = {"nodes": [], "edges": []}
 
-    if not GEMINI_API_KEY or len(GEMINI_API_KEY) < 10 or "Replace" in GEMINI_API_KEY:
-        # Mock Graph if key is missing
+    if not OllamaClient.is_online():
+        # Mock Graph if Ollama is offline
         paper_id = re.sub(r"\W+", "_", paper_title.lower())[:20]
         return {
             "nodes": [
@@ -80,23 +72,13 @@ Ensure the node "{paper_title}" of type "Paper" is included as the primary root 
 Do NOT output markdown blocks or notes. Output raw, clean, parseable JSON.
 """
     try:
-        if not client:
-            print("Gemini Client not initialized in knowledge_graph. Returning default placeholders.")
-            return default_graph
-        model_name = "gemini-2.5-flash"
-        try:
-            response = client.models.generate_content(
-                model=model_name,
-                contents=prompt
-            )
-        except Exception as e:
-            print(f"Graph extraction model failed: {e}. Trying gemini-1.5-flash fallback.")
-            response = client.models.generate_content(
-                model="gemini-1.5-flash",
-                contents=prompt
-            )
+        # Call Ollama Client with format constraints
+        clean_json_str = OllamaClient.generate(
+            prompt=prompt,
+            format_json=True,
+            temperature=0.1
+        )
 
-        clean_json_str = response.text.strip()
         if clean_json_str.startswith("```"):
             clean_json_str = re.sub(r"^```(?:json)?\n", "", clean_json_str)
             clean_json_str = re.sub(r"\n```$", "", clean_json_str)

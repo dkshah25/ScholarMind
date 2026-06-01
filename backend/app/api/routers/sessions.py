@@ -109,17 +109,16 @@ def run_copilot_assistant(payload: CopilotRequest):
     Answer the researcher's query with extreme technical clarity, rigour, and precision. Maintain a serious, constructive academic tone. Proactively provide citation links or trace arguments where possible.
     """
     
-    from app.agents.base_agent import client
-    if not client:
-        reply = "Copilot engine offline. Please verify GEMINI_API_KEY settings."
+    from app.services.ollama_client import OllamaClient
+    if not OllamaClient.is_online():
+        reply = "Copilot engine offline. Please verify Ollama is running."
     else:
         try:
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=payload.message,
-                config={"system_instruction": system_prompt}
+            reply = OllamaClient.generate(
+                prompt=payload.message,
+                system_prompt=system_prompt,
+                temperature=0.7
             )
-            reply = response.text
         except Exception as e:
             reply = f"Error calling copilot agent: {str(e)}"
             
@@ -171,8 +170,8 @@ def compare_concept_novelty(payload: NoveltyRequest):
     }}
     """
     
-    from app.agents.base_agent import client
-    if not client:
+    from app.services.ollama_client import OllamaClient
+    if not OllamaClient.is_online():
         return {
             "novelty_score": 8.0,
             "novelty_rationale": "LLM offline default novelty review.",
@@ -181,13 +180,16 @@ def compare_concept_novelty(payload: NoveltyRequest):
         }
         
     try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config={"response_mime_type": "application/json"}
+        clean_text = OllamaClient.generate(
+            prompt=prompt,
+            format_json=True,
+            temperature=0.1
         )
+        if clean_text.startswith("```"):
+            clean_text = re.sub(r"^```(?:json)?\n", "", clean_text)
+            clean_text = re.sub(r"\n```$", "", clean_text)
         import json
-        return json.loads(response.text.strip())
+        return json.loads(clean_text.strip())
     except Exception as e:
         return {
             "novelty_score": 8.0,

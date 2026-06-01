@@ -2,19 +2,10 @@ import os
 import json
 import re
 from typing import Dict, Any, Optional
-from google import genai
-from google.genai import types
 from dotenv import load_dotenv
+from app.services.ollama_client import OllamaClient
 
 load_dotenv()
-
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-client = None
-if GEMINI_API_KEY and len(GEMINI_API_KEY.strip()) > 8 and "Replace" not in GEMINI_API_KEY:
-    try:
-        client = genai.Client(api_key=GEMINI_API_KEY)
-    except Exception as e:
-        print(f"Failed to initialize Gemini Client: {e}")
 
 class BaseAgent:
     """Base Agent wrapper providing uniform LLM access, schema parsing, and system rules."""
@@ -22,11 +13,11 @@ class BaseAgent:
     def __init__(self, agent_name: str, system_prompt: str):
         self.name = agent_name
         self.system_prompt = system_prompt
-        self.api_configured = client is not None
+        self.api_configured = OllamaClient.is_online()
 
     def call_llm(self, prompt: str, schema_template: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Calls Gemini with strict system instructions and schema expectations."""
-        if not self.api_configured or client is None:
+        """Calls local Ollama (Qwen3:8B) with strict system instructions and schema expectations."""
+        if not OllamaClient.is_online():
             # Return dummy stub matching expected fields to avoid crashing when offline
             print(f"[Offline mode] Agent {self.name} returning stub responses.")
             return self._get_offline_stub(schema_template)
@@ -37,18 +28,17 @@ class BaseAgent:
             final_prompt += f"\n\nIMPORTANT: You must return ONLY a valid JSON object matching this structure:\n{json.dumps(schema_template, indent=2)}\nDo NOT include markdown syntax (like ```json), explanations, or notes. Just return the JSON object."
 
         try:
-            # Use gemini-2.5-flash directly for high-speed, high-limit free-tier runs
-            model_name = "gemini-2.5-flash"
-            response = client.models.generate_content(
-                model=model_name,
-                contents=final_prompt,
-                config=types.GenerateContentConfig(
-                    system_instruction=self.system_prompt
-                )
+            # We set temperature lower for precise structural tasks (schemas)
+            # and default context window to 16k tokens to avoid RAM spikes on local machines
+            temp = 0.1 if schema_template else 0.7
+            clean_text = OllamaClient.generate(
+                prompt=final_prompt,
+                system_prompt=self.system_prompt,
+                format_json=(schema_template is not None),
+                temperature=temp
             )
 
-            # Strip possible markdown styling blocks
-            clean_text = response.text.strip()
+            # Strip possible markdown styling blocks just in case
             if clean_text.startswith("```"):
                 clean_text = re.sub(r"^```(?:json)?\n", "", clean_text)
                 clean_text = re.sub(r"\n```$", "", clean_text)
